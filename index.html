@@ -366,10 +366,6 @@ E [Wh] = E [J] / 3600</div>
     <div class="escenario">
       <p class="intro">Terreno aleatorio de 120 × 72 m con colinas, manchas de <strong>pasto</strong> y <strong>tierra suelta</strong>, y <strong>rocas</strong>. A* busca dos rutas: la de <strong class="c-directa">distancia mínima</strong> (w_E = 0) y la <strong class="c-energia">ruta con energía</strong> (w_E del deslizador).</p>
 
-      <div class="aviso-bloque">
-        <strong>Versión preliminar.</strong> Esta búsqueda <strong>no considera el remolque</strong>: A* planifica para un punto en una grilla y el remolque solo se calcula después, al evaluar la ruta. Por eso una ruta puede "no cumplir" |β| ≤ β_max. El planificador final usará <strong>Hybrid A*</strong>, que busca sobre estados (x, y, θ0, θ1) con movimientos que el tractor–tráiler sí puede hacer.
-      </div>
-
       <div class="canvas-wrap">
         <canvas id="cv3-mapa" class="cv-plan" aria-label="Mapa del terreno aleatorio con las rutas planificadas"></canvas>
         <div class="leyenda">
