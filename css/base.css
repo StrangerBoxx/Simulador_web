@@ -1,0 +1,82 @@
+/* =====================================================================
+   BASE, ENCABEZADO, PESTAÑAS Y DISTRIBUCIÓN GENERAL
+   ===================================================================== */
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; overflow-x: hidden; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Source Sans 3", system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+}
+h1, h2, h3, h4 { font-family: "Archivo", system-ui, sans-serif; margin: 0; line-height: 1.2; }
+.mono, output, .num { font-family: "JetBrains Mono", ui-monospace, monospace; }
+p { margin: 0 0 0.6em; }
+canvas { display: block; max-width: 100%; }
+
+/* ---------- Encabezado ---------- */
+header.cabecera {
+  padding: 18px 20px 10px;
+  display: flex; flex-wrap: wrap; gap: 10px 20px;
+  align-items: flex-end; justify-content: space-between;
+  max-width: 1400px; margin: 0 auto;
+}
+.cabecera h1 { font-size: clamp(1.3rem, 2.6vw, 1.9rem); font-weight: 700; }
+.cabecera .subtitulo { color: var(--muted); margin-top: 4px; font-size: 0.95rem; max-width: 70ch; }
+.cabecera .acciones { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.aviso {
+  font-size: 0.8rem; padding: 3px 9px; border-radius: 999px;
+  background: var(--surface-2); color: var(--earth); border: 1px solid var(--border);
+  font-weight: 600;
+}
+
+/* ---------- Pestañas ---------- */
+nav.pestanas {
+  max-width: 1400px; margin: 0 auto; padding: 0 20px;
+  display: flex; gap: 4px; overflow-x: auto;      /* si no caben, se desplazan solo ellas */
+  border-bottom: 1px solid var(--border);
+  scrollbar-width: thin;
+}
+nav.pestanas button {
+  font: 600 0.95rem "Archivo", sans-serif;
+  background: transparent; color: var(--muted);
+  border: 1px solid transparent; border-bottom: none;
+  padding: 9px 14px; border-radius: 8px 8px 0 0; cursor: pointer; white-space: nowrap;
+}
+nav.pestanas button[aria-selected="true"] {
+  background: var(--surface); color: var(--text);
+  border-color: var(--border); margin-bottom: -1px;
+  box-shadow: inset 0 3px 0 var(--accent);
+}
+nav.pestanas button:hover { color: var(--text); }
+
+main { max-width: 1400px; margin: 0 auto; padding: 16px 20px 24px; }
+.tab-panel[hidden] { display: none; }
+
+/* ---------- Distribución: panel de controles (izq.) + escenario (der.) ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(250px, 320px) minmax(0, 1fr);
+  gap: 16px; align-items: start;
+}
+.layout > * { min-width: 0; }   /* evita que un canvas ancho rompa la grilla */
+.escenario { display: flex; flex-direction: column; gap: 14px; }
+.intro { color: var(--muted); font-size: 0.95rem; }
+.intro strong { color: var(--text); }
+
+@media (max-width: 760px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  main, header.cabecera, nav.pestanas { padding-left: 16px; padding-right: 16px; }
+}
+
+/* ---------- Pie de página ---------- */
+footer {
+  max-width: 1400px; margin: 0 auto; padding: 14px 20px 30px;
+  color: var(--muted); font-size: 0.85rem;
+  display: flex; flex-wrap: wrap; gap: 6px 20px; justify-content: space-between;
+}
+#verificacion-pie.ok  { color: var(--ok); font-weight: 600; }
+#verificacion-pie.bad { color: var(--bad); font-weight: 600; }

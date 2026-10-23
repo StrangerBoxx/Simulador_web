@@ -1,0 +1,118 @@
+/* =====================================================================
+   VARIABLES DE COLOR (tokens)
+   Todos los colores de la página y de los canvas salen de aquí.
+   El modo oscuro solo redefine estas variables.
+   ===================================================================== */
+:root {
+  --bg:            #f4f1e8;   /* fondo general, tono hueso */
+  --surface:       #fffdf7;   /* tarjetas y paneles */
+  --surface-2:     #ece7da;   /* fondos secundarios */
+  --border:        #d6cebd;
+  --text:          #23281f;
+  --muted:         #5f6656;
+  --accent:        #4a6b3a;   /* verde musgo (botones, pestaña activa) */
+  --accent-text:   #ffffff;
+  --earth:         #8a5a2b;   /* tierra */
+
+  /* Canvas */
+  --canvas-bg:     #f7f4ec;
+  --grid:          rgba(60, 70, 50, 0.13);
+  --grid-fuerte:   rgba(60, 70, 50, 0.30);
+  --tractor:       #3f7a3a;
+  --tractor-borde: #24491f;
+  --remolque:      #d9822b;
+  --remolque-borde:#8c4f14;
+  --rueda:         #2b2b28;
+  --barra:         #4b4b45;
+  --huella-t:      rgba(63, 122, 58, 0.75);
+  --huella-r:      rgba(217, 130, 43, 0.85);
+
+  /* Rutas */
+  --ruta-directa:  #c0392b;   /* rojo: directa / distancia mínima */
+  --ruta-energia:  #2f6db5;   /* azul: desvío / con energía */
+
+  /* Estados */
+  --ok:            #3f7a3a;
+  --warn:          #c08a12;
+  --bad:           #b8322a;
+  --insignia-texto:#ffffff;
+
+  /* Tipos de suelo en los mapas (deben ser #rrggbb: se leen en JS) */
+  --suelo-pavimento: #a3a39b;
+  --suelo-compacto:  #c2a982;
+  --suelo-pasto:     #93b86e;
+  --suelo-tierra:    #ae7c4c;
+  --suelo-arena:     #eedfa9;
+}
+
+/* Modo oscuro automático (según el sistema), salvo que se fuerce el claro */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:            #141813;
+    --surface:       #1d221b;
+    --surface-2:     #262c23;
+    --border:        #3a4232;
+    --text:          #e6e8df;
+    --muted:         #a2a996;
+    --accent:        #8fbf6a;
+    --accent-text:   #14200d;
+    --earth:         #d19a5c;
+    --canvas-bg:     #1a1f18;
+    --grid:          rgba(220, 230, 200, 0.08);
+    --grid-fuerte:   rgba(220, 230, 200, 0.20);
+    --tractor:       #6fae5c;
+    --tractor-borde: #b9e0a8;
+    --remolque:      #ee9a46;
+    --remolque-borde:#ffd3a3;
+    --rueda:         #0b0c0a;
+    --barra:         #c9c9bf;
+    --huella-t:      rgba(111, 174, 92, 0.8);
+    --huella-r:      rgba(238, 154, 70, 0.9);
+    --ruta-directa:  #ef6b5b;
+    --ruta-energia:  #6aa6ef;
+    --ok:            #7fc46a;
+    --warn:          #e2b13c;
+    --bad:           #ef6b5b;
+    --insignia-texto:#111111;
+    --suelo-pavimento: #6e6e67;
+    --suelo-compacto:  #74634a;
+    --suelo-pasto:     #5c7a44;
+    --suelo-tierra:    #7a5534;
+    --suelo-arena:     #b9a971;
+  }
+}
+
+/* Modo oscuro forzado con el botón "Tema" */
+:root[data-theme="dark"] {
+  --bg:            #141813;
+  --surface:       #1d221b;
+  --surface-2:     #262c23;
+  --border:        #3a4232;
+  --text:          #e6e8df;
+  --muted:         #a2a996;
+  --accent:        #8fbf6a;
+  --accent-text:   #14200d;
+  --earth:         #d19a5c;
+  --canvas-bg:     #1a1f18;
+  --grid:          rgba(220, 230, 200, 0.08);
+  --grid-fuerte:   rgba(220, 230, 200, 0.20);
+  --tractor:       #6fae5c;
+  --tractor-borde: #b9e0a8;
+  --remolque:      #ee9a46;
+  --remolque-borde:#ffd3a3;
+  --rueda:         #0b0c0a;
+  --barra:         #c9c9bf;
+  --huella-t:      rgba(111, 174, 92, 0.8);
+  --huella-r:      rgba(238, 154, 70, 0.9);
+  --ruta-directa:  #ef6b5b;
+  --ruta-energia:  #6aa6ef;
+  --ok:            #7fc46a;
+  --warn:          #e2b13c;
+  --bad:           #ef6b5b;
+  --insignia-texto:#111111;
+  --suelo-pavimento: #6e6e67;
+  --suelo-compacto:  #74634a;
+  --suelo-pasto:     #5c7a44;
+  --suelo-tierra:    #7a5534;
+  --suelo-arena:     #b9a971;
+}

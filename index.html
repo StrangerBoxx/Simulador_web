@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador Tractor–Tráiler</title>
+<meta name="description" content="Modelo interactivo del Trabajo de Título: planificación de trayectorias energéticamente eficientes para robots móviles tipo tractor–tráiler (J. Vásquez Rosales, UTFSM 2026).">
+
+<!-- Tipografías: Archivo (títulos), Source Sans 3 (texto), JetBrains Mono (números) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+
+<!-- Estilos: primero los colores, luego la estructura, luego los componentes -->
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/componentes.css">
+</head>
+
+<body>
+<!-- ================================================================
+     ENCABEZADO
+     ================================================================ -->
+<header class="cabecera">
+  <div>
+    <h1>Simulador tractor–tráiler</h1>
+    <p class="subtitulo">Planificación de trayectorias energéticamente eficientes para robots móviles tipo tractor–tráiler en terrenos con diferente pendiente y resistencia · Juan Vásquez Rosales · UTFSM 2026</p>
+  </div>
+  <div class="acciones">
+    <span class="aviso">Valores ilustrativos · unidades SI</span>
+    <button class="btn chico" id="btn-tema" title="Cambiar entre automático, claro y oscuro">Tema: automático</button>
+  </div>
+</header>
+
+<nav class="pestanas" role="tablist" aria-label="Secciones del simulador">
+  <button role="tab" data-tab="tab-remolque" aria-selected="true">1 · El remolque</button>
+  <button role="tab" data-tab="tab-energia" aria-selected="false">2 · Energía en pendiente</button>
+  <button role="tab" data-tab="tab-planificador" aria-selected="false">3 · Planificador</button>
+</nav>
+
+<main>
+<!-- ================================================================
+     PESTAÑA 1 · EL REMOLQUE        (lógica: js/pestanas/remolque.js)
+     ================================================================ -->
+<section id="tab-remolque" class="tab-panel" role="tabpanel">
+  <div class="layout">
+    <aside class="panel">
+      <div class="panel-cabecera">
+        <h2>Controles</h2>
+        <button class="btn chico" type="button" data-restablecer title="Volver todos los controles de esta pestaña a sus valores por defecto">↺ Restablecer</button>
+      </div>
+
+      <div class="grupo">
+        <h3>Conducción</h3>
+        <div class="control">
+          <label for="r1-phi">Ángulo de dirección φ <output id="o1-phi"></output></label>
+          <input type="range" id="r1-phi" min="-35" max="35" step="1" value="0">
+        </div>
+        <div class="control">
+          <label for="r1-v">Velocidad v <output id="o1-v"></output></label>
+          <input type="range" id="r1-v" min="-1.5" max="1.5" step="0.1" value="1">
+        </div>
+      </div>
+
+      <div class="grupo">
+        <h3>Geometría</h3>
+        <div class="control">
+          <label for="r1-L0">Distancia entre ejes L0 <output id="o1-L0"></output></label>
+          <input type="range" id="r1-L0" min="1" max="3.5" step="0.1" value="2">
+        </div>
+        <div class="control">
+          <label for="r1-L1">Enganche → eje remolque L1 <output id="o1-L1"></output></label>
+          <input type="range" id="r1-L1" min="1" max="4" step="0.1" value="2.5">
+        </div>
+      </div>
+
+      <div class="grupo">
+        <h3>Límite del enganche</h3>
+        <div class="control">
+          <label for="r1-bmax">β máximo <output id="o1-bmax"></output></label>
+          <input type="range" id="r1-bmax" min="20" max="90" step="1" value="60">
+        </div>
+        <label class="casilla"><input type="checkbox" id="c1-detener" checked> Detener al superar β_max</label>
+      </div>
+
+      <div class="grupo">
+        <h3>Simulación</h3>
+        <div class="botones">
+          <button class="btn primario" id="b1-pausa">Pausar</button>
+          <button class="btn" id="b1-reiniciar">Reiniciar</button>
+        </div>
+        <label class="casilla separada"><input type="checkbox" id="c1-robot" checked> Mostrar tractor y remolque</label>
+      </div>
+
+      <div class="grupo">
+        <h3>Pruebas rápidas</h3>
+        <div class="botones">
+          <button class="btn" id="b1-giro">Giro adelante</button>
+          <button class="btn" id="b1-retro">Retroceso recto</button>
+          <button class="btn" id="b1-retrogiro">Retroceso con giro</button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="escenario">
+      <p class="intro">Vista superior. La cámara sigue al tractor. El <strong>tractor</strong> se mueve según φ y v; el <strong>remolque</strong> no tiene motor ni dirección: solo obedece a la cinemática del enganche. El ángulo entre ambos es <strong>β = θ0 − θ1</strong>.</p>
+
+      <div class="canvas-wrap">
+        <canvas id="cv1-escena" class="cv-escena" aria-label="Vista superior del tractor y el remolque"></canvas>
+        <div class="leyenda">
+          <span><i class="muestra tractor"></i>Tractor</span>
+          <span><i class="muestra remolque"></i>Remolque</span>
+          <span><i class="muestra linea huella-t"></i>Huella del tractor</span>
+          <span><i class="muestra punteada huella-r"></i>Huella del remolque</span>
+          <span>Cuadrícula: 2 m</span>
+        </div>
+      </div>
+
+      <div class="lecturas">
+        <div class="lectura"><div class="etq">Tiempo</div><div class="val" id="l1-t"></div></div>
+        <div class="lectura"><div class="etq">Ángulo β</div><div class="val" id="l1-beta"></div></div>
+        <div class="lectura"><div class="etq">Radio de giro R = L0/tan φ</div><div class="val" id="l1-R"></div></div>
+        <div class="lectura"><div class="etq">β estacionario = asin(L1/R)</div><div class="val" id="l1-bss"></div></div>
+        <div class="lectura"><div class="etq">Distancia recorrida</div><div class="val" id="l1-dist"></div></div>
+      </div>
+
+      <div class="tarjeta estado-box">
+        <div class="estado-cabecera">
+          <span>|β| / β_max = <b class="num" id="l1-ratio"></b></span>
+          <span class="insignia ok" id="l1-estado">ESTABLE</span>
+        </div>
+        <div class="barra-beta"><div class="relleno ok" id="l1-barra"></div><div class="marca70" title="70 %"></div></div>
+        <p class="frase" id="l1-frase"></p>
+      </div>
+
+      <div class="tarjeta">
+        <h3>β en el tiempo (últimos 30 s)</h3>
+        <canvas id="cv1-beta" class="cv-grafico" aria-label="Gráfico de beta en el tiempo"></canvas>
+      </div>
+
+      <details class="ecuaciones">
+        <summary>Ecuaciones que se están usando</summary>
+        <h4>Cinemática (tractor tipo automóvil, remolque enganchado sobre el eje trasero)</h4>
+        <p>Estado: [x0, y0, θ0, θ1]. (x0, y0) es el centro del eje trasero del tractor, donde está el enganche.</p>
+        <div class="eq">dx0/dt = v·cos θ0
+dy0/dt = v·sin θ0
+dθ0/dt = (v / L0)·tan φ
+dθ1/dt = (v / L1)·sin(θ0 − θ1)</div>
+        <div class="eq">β  = θ0 − θ1   (normalizado a (−π, π])
+x1 = x0 − L1·cos θ1
+y1 = y0 − L1·sin θ1</div>
+        <h4>Giro y ángulo estacionario</h4>
+        <div class="eq">R    = L0 / tan φ          (radio del eje trasero del tractor)
+β_ss = asin(L1 / R)        (solo existe si L1 ≤ |R|)</div>
+        <h4>Integración numérica: Runge–Kutta de orden 4</h4>
+        <div class="eq">k1 = f(s)
+k2 = f(s + dt/2·k1)
+k3 = f(s + dt/2·k2)
+k4 = f(s + dt·k3)
+s ← s + dt/6·(k1 + 2k2 + 2k3 + k4)        dt = 0,02 s · 5 pasos por cuadro</div>
+        <h4>¿Por qué el retroceso es inestable?</h4>
+        <p>Si el tractor va recto (φ = 0), entonces dβ/dt = −(v/L1)·sin β. Avanzando (v &gt; 0) el signo es negativo y β vuelve a cero: el remolque se alinea solo. Retrocediendo (v &lt; 0) el signo cambia y cualquier β pequeño crece: es el <em>jackknife</em> (efecto tijera).</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     PESTAÑA 2 · ENERGÍA EN PENDIENTE  (lógica: js/pestanas/energia.js)
+     ================================================================ -->
+<section id="tab-energia" class="tab-panel" role="tabpanel" hidden>
+  <div class="layout">
+    <aside class="panel">
+      <div class="panel-cabecera">
+        <h2>Controles</h2>
+        <button class="btn chico" type="button" data-restablecer title="Volver todos los controles de esta pestaña a sus valores por defecto">↺ Restablecer</button>
+      </div>
+
+      <div class="grupo">
+        <h3>Terreno</h3>
+        <div class="control">
+          <label for="r2-H">Altura de la colina H <output id="o2-H"></output></label>
+          <input type="range" id="r2-H" min="0" max="12" step="0.5" value="8">
+        </div>
+        <div class="control">
+          <label for="s2-sA">Suelo A (franja central, |y| &lt; 12 m)</label>
+          <select id="s2-sA"></select>
+        </div>
+        <div class="control">
+          <label for="s2-sB">Suelo B (zona lateral)</label>
+          <select id="s2-sB"></select>
+        </div>
+      </div>
+
+      <div class="grupo">
+        <h3>Ruta con desvío</h3>
+        <div class="control">
+          <label for="r2-D">Separación del desvío D <output id="o2-D"></output></label>
+          <input type="range" id="r2-D" min="18" max="45" step="1" value="30">
+        </div>
+      </div>
+
+      <div class="grupo">
+        <h3>Robot</h3>
+        <div class="control">
+          <label for="r2-mR">Masa del remolque <output id="o2-mR"></output></label>
+          <input type="range" id="r2-mR" min="0" max="600" step="10" value="300">
+        </div>
+        <div class="control">
+          <label for="r2-eta">Eficiencia de tracción η <output id="o2-eta"></output></label>
+          <input type="range" id="r2-eta" min="0.5" max="1" step="0.01" value="0.8">
+        </div>
+        <div class="control">
+          <label for="r2-etaR">Recuperación en bajada η_r <output id="o2-etaR"></output></label>
+          <input type="range" id="r2-etaR" min="0" max="0.8" step="0.05" value="0">
+        </div>
+      </div>
+
+      <div class="grupo">
+        <h3>Animación</h3>
+        <div class="botones">
+          <button class="btn primario" id="b2-recorrer">Recorrer ambas rutas</button>
+        </div>
+        <label class="casilla separada"><input type="checkbox" id="c2-robot" checked> Mostrar robots</label>
+        <label class="casilla separada"><input type="checkbox" id="c2-huellaR"> Mostrar huella del remolque</label>
+        <p class="nota">Animación acelerada (10 m/s en pantalla). La energía no depende de la velocidad en este modelo.</p>
+      </div>
+    </aside>
+
+    <div class="escenario">
+      <p class="intro">Dos rutas de (0, 0) a (100, 0). La <strong class="c-directa">ruta directa</strong> cruza la colina; el <strong class="c-energia">desvío</strong> la rodea, pero es más largo y pasa por otro suelo. ¿Cuál gasta menos energía? Pasa el mouse sobre el mapa para ver la altura y el suelo.</p>
+
+      <div class="canvas-wrap">
+        <canvas id="cv2-mapa" class="cv-mapa" aria-label="Mapa del terreno con las dos rutas"></canvas>
+        <div class="leyenda">
+          <span><i class="muestra" id="lg2-A"></i><span id="lg2-An"></span></span>
+          <span><i class="muestra" id="lg2-B"></i><span id="lg2-Bn"></span></span>
+          <span><i class="muestra linea ruta-directa"></i>Ruta directa</span>
+          <span><i class="muestra linea ruta-energia"></i>Desvío</span>
+          <span id="lg2-huellaR" hidden><i class="muestra punteada huella-r"></i>Huella del remolque</span>
+          <span>Curvas de nivel cada 1 m</span>
+        </div>
+      </div>
+
+      <div class="lecturas">
+        <div class="lectura"><div class="etq">Robot rojo · ruta directa</div><div class="val" id="l2-D"></div></div>
+        <div class="lectura"><div class="etq">Robot azul · desvío</div><div class="val" id="l2-V"></div></div>
+      </div>
+
+      <div class="tarjeta">
+        <h3>Conclusión</h3>
+        <p class="conclusion" id="t2-conclusion"></p>
+        <p class="nota" id="t2-porque"></p>
+      </div>
+
+      <div class="tarjeta">
+        <h3>Métricas de ambas rutas</h3>
+        <div class="tabla-wrap">
+          <table class="tabla">
+            <thead><tr><th>Métrica</th><th class="num c-directa">Directa</th><th class="num c-energia">Desvío</th><th class="num">Desvío − directa</th></tr></thead>
+            <tbody id="t2-tabla"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="graficos-2">
+        <div class="tarjeta">
+          <h3>Perfil de altura</h3>
+          <canvas id="cv2-perfil" class="cv-grafico" aria-label="Perfil de altura de ambas rutas"></canvas>
+        </div>
+        <div class="tarjeta">
+          <h3>Energía acumulada</h3>
+          <canvas id="cv2-energia" class="cv-grafico" aria-label="Energía acumulada de ambas rutas"></canvas>
+        </div>
+      </div>
+
+      <details class="ecuaciones">
+        <summary>Ecuaciones que se están usando</summary>
+        <h4>Terreno</h4>
+        <div class="eq">h(x, y) = H·exp(−((x − 50)² + y²) / (2·14²))
+suelo   = A si |y| &lt; 12 m;  B en otro caso</div>
+        <h4>Rutas</h4>
+        <div class="eq">Directa: y = 0,                 0 ≤ x ≤ 100 m
+Desvío:  y = D·sin(π·x / 100),   0 ≤ x ≤ 100 m</div>
+        <h4>Evaluación de una ruta (el tractor sigue la ruta; el remolque obedece la cinemática)</h4>
+        <div class="eq">Remuestreo cada ds = 0,25 m;  θ0 = tangente de la ruta
+θ1 ← θ1 + (ds / L1)·sin(θ0 − θ1)
+x1 = x0 − L1·cos θ1,   y1 = y0 − L1·sin θ1</div>
+        <div class="eq">Pendiente de avance bajo cada cuerpo (u = vector unitario de su orientación):
+α = atan( (h(p + 0,5·u) − h(p − 0,5·u)) / 1 m )
+Pendiente lateral: lo mismo con u perpendicular a θ0</div>
+        <div class="eq">F = m_tractor·g·(sin α0 + Crr0·cos α0) + m_remolque·g·(sin α1 + Crr1·cos α1)
+
+si F ≥ 0:  E ← E + F·ds / η          (se paga más que F por las pérdidas)
+si F &lt; 0:  E ← E + η_r·F·ds          (en bajada se recupera solo la fracción η_r)
+
+E [Wh] = E [J] / 3600</div>
+        <h4>Para interpretar</h4>
+        <p>Subir 1 m con 550 kg y η = 0,8 cuesta m·g·1 m / η ≈ 1,87 Wh. Recorrer 1 m llano cuesta m·g·Crr / η: 0,094 Wh en suelo compacto y 0,19 Wh en pasto. El desvío conviene cuando la energía que ahorra al no subir supera lo que gasta por ser más largo y por su suelo.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     PESTAÑA 3 · PLANIFICADOR       (lógica: js/pestanas/planificador.js)
+     ================================================================ -->
+<section id="tab-planificador" class="tab-panel" role="tabpanel" hidden>
+  <div class="layout">
+    <aside class="panel">
+      <div class="panel-cabecera">
+        <h2>Controles</h2>
+        <button class="btn chico" type="button" data-restablecer title="Volver todos los controles de esta pestaña a sus valores por defecto">↺ Restablecer</button>
+      </div>
+
+      <div class="grupo">
+        <h3>Costo de la búsqueda</h3>
+        <div class="control">
+          <label for="r3-wE">Peso de la energía w_E <output id="o3-wE"></output></label>
+          <input type="range" id="r3-wE" min="0" max="1" step="0.05" value="0.8">
+        </div>
+        <p class="nota">0 = solo distancia · 1 = solo energía</p>
+      </div>
+
+      <div class="grupo">
+        <h3>Restricciones</h3>
+        <div class="control">
+          <label for="r3-amax">Pendiente máxima α_max <output id="o3-amax"></output></label>
+          <input type="range" id="r3-amax" min="6" max="30" step="1" value="15">
+        </div>
+        <div class="control">
+          <label for="r3-bmax">β máximo <output id="o3-bmax"></output></label>
+          <input type="range" id="r3-bmax" min="20" max="90" step="1" value="60">
+        </div>
+      </div>
+
+      <div class="grupo">
+        <h3>Robot</h3>
+        <div class="control">
+          <label for="r3-mR">Masa del remolque <output id="o3-mR"></output></label>
+          <input type="range" id="r3-mR" min="0" max="600" step="10" value="300">
+        </div>
+      </div>
+
+      <div class="grupo">
+        <h3>Terreno</h3>
+        <p class="nota nota-arriba">Semilla: <b class="num" id="t3-semilla"></b></p>
+        <div class="botones"><button class="btn" id="b3-nuevo">Nuevo terreno</button></div>
+        <p class="nota">Un clic en el mapa mueve:</p>
+        <div class="opciones">
+          <label class="casilla"><input type="radio" name="clic3" value="inicio" checked> el inicio</label>
+          <label class="casilla"><input type="radio" name="clic3" value="meta"> la meta</label>
+        </div>
+        <label class="casilla separada"><input type="checkbox" id="c3-zonas"> Mostrar grilla y zonas prohibidas</label>
+      </div>
+
+      <div class="grupo">
+        <h3>Animación</h3>
+        <div class="botones"><button class="btn primario" id="b3-recorrer">Recorrer ruta</button></div>
+        <label class="casilla separada"><input type="checkbox" id="c3-robot" checked> Mostrar robot</label>
+        <label class="casilla separada"><input type="checkbox" id="c3-huellaR"> Mostrar huella del remolque</label>
+        <p class="nota">Recorre la ruta azul (acelerada, 6 m/s en pantalla).</p>
+      </div>
+    </aside>
+
+    <div class="escenario">
+      <p class="intro">Terreno aleatorio de 120 × 72 m con colinas, manchas de <strong>pasto</strong> y <strong>tierra suelta</strong>, y <strong>rocas</strong>. A* busca dos rutas: la de <strong class="c-directa">distancia mínima</strong> (w_E = 0) y la <strong class="c-energia">ruta con energía</strong> (w_E del deslizador).</p>
+
+      <div class="aviso-bloque">
+        <strong>Versión preliminar.</strong> Esta búsqueda <strong>no considera el remolque</strong>: A* planifica para un punto en una grilla y el remolque solo se calcula después, al evaluar la ruta. Por eso una ruta puede "no cumplir" |β| ≤ β_max. El planificador final usará <strong>Hybrid A*</strong>, que busca sobre estados (x, y, θ0, θ1) con movimientos que el tractor–tráiler sí puede hacer.
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="cv3-mapa" class="cv-plan" aria-label="Mapa del terreno aleatorio con las rutas planificadas"></canvas>
+        <div class="leyenda">
+          <span><i class="muestra suelo-compacto"></i>Suelo compacto</span>
+          <span><i class="muestra suelo-pasto"></i>Pasto</span>
+          <span><i class="muestra suelo-tierra"></i>Tierra suelta</span>
+          <span><i class="muestra roca"></i>Roca</span>
+          <span><i class="muestra punteada ruta-directa"></i>Distancia mínima</span>
+          <span><i class="muestra linea ruta-energia"></i>Con energía</span>
+          <span id="lg3-huellaR" hidden><i class="muestra punteada huella-r"></i>Huella del remolque</span>
+        </div>
+      </div>
+      <p class="nota txt-bad" id="t3-aviso"></p>
+
+      <div class="lecturas">
+        <div class="lectura"><div class="etq">Distancia recorrida</div><div class="val" id="l3-s"></div></div>
+        <div class="lectura"><div class="etq">Energía acumulada</div><div class="val" id="l3-E"></div></div>
+        <div class="lectura"><div class="etq">Ángulo β</div><div class="val" id="l3-b"></div></div>
+        <div class="lectura"><div class="etq">|β| / β_max</div><div class="val" id="l3-r"></div></div>
+      </div>
+
+      <div class="tarjeta">
+        <h3>Conclusión</h3>
+        <p class="conclusion" id="t3-conclusion"></p>
+      </div>
+
+      <div class="tarjeta">
+        <h3>Comparación de rutas</h3>
+        <div class="tabla-wrap">
+          <table class="tabla">
+            <thead><tr><th>Métrica</th><th class="num c-directa">Distancia mínima</th><th class="num c-energia">Con energía</th><th class="num">Diferencia</th></tr></thead>
+            <tbody id="t3-tabla"></tbody>
+          </table>
+        </div>
+        <p class="nota">Las restricciones se verifican sobre la ruta <em>suavizada</em> y con el remolque. A* respeta α_max entre centros de celdas (cada 2 m), pero al suavizar y medir con base de 1 m la pendiente puede superar un poco el límite.</p>
+      </div>
+
+      <details class="ecuaciones">
+        <summary>Ecuaciones que se están usando</summary>
+        <h4>Terreno aleatorio (semilla fija, generador mulberry32)</h4>
+        <div class="eq">h(x, y) = Σ Hᵢ·exp(−((x − cxᵢ)² + (y − cyᵢ)²) / (2·σᵢ²))     3 a 5 colinas
+Suelo: tierra suelta / pasto dentro de manchas; compacto en el resto
+Rocas: círculos a más de 12 m del inicio y la meta</div>
+        <h4>Grilla y costo de cada paso (8 vecinos, celdas de 2 m)</h4>
+        <div class="eq">L = 2 m (recto) o 2√2 m (diagonal)
+α = atan(Δh / L)                              Δh entre centros de celda
+F = m·g·(sin α + Crr·cos α)                   m = m_tractor + m_remolque
+E_ref = m·g·0,05 / η                          (costo por metro en suelo compacto plano)
+
+costo = (1 − w_E)·E_ref·L + w_E·max(F, 0)·L / η</div>
+        <h4>Prohibiciones</h4>
+        <div class="eq">Celdas a menos de (radio de la roca + 1 m) de una roca
+Pasos con |α| &gt; α_max
+Diagonales que cortan la esquina de una celda con roca</div>
+        <h4>Heurística (admisible)</h4>
+        <div class="eq">h(n) = (1 − w_E)·E_ref·‖n − meta‖</div>
+        <p>Es admisible porque nunca sobrestima: el término de distancia de cualquier ruta real es al menos (1 − w_E)·E_ref por la distancia en línea recta, y el término de energía nunca es negativo (max(F, 0) ≥ 0). Con w_E = 1 la heurística vale 0 y A* se comporta como Dijkstra.</p>
+        <h4>Suavizado de Chaikin (2 iteraciones)</h4>
+        <div class="eq">Cada segmento AB → Q = 0,75·A + 0,25·B  y  R = 0,25·A + 0,75·B
+(se conservan el inicio y la meta)</div>
+        <h4>Evaluación final</h4>
+        <p>Cada ruta suavizada se evalúa con el mismo modelo de la pestaña 2: remuestreo cada 0,25 m, cinemática del remolque, pendiente bajo cada cuerpo y energía con η = 0,8 y η_r = 0.</p>
+      </details>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <span>Juan Vásquez Rosales · Universidad Técnica Federico Santa María · 2026 · Todos los valores son ilustrativos y están en unidades SI.</span>
+  <span id="verificacion-pie">Autoverificación del modelo…</span>
+</footer>
+
+<!-- Scripts en orden de dependencia: cada archivo solo usa lo que se cargó antes.
+     (Scripts clásicos, no módulos, para que la página abra con doble clic.) -->
+<script src="js/config/parametros.js"></script>
+<script src="js/utils/matematica.js"></script>
+<script src="js/utils/aleatorio.js"></script>
+<script src="js/utils/controles.js"></script>
+<script src="js/utils/canvas.js"></script>
+<script src="js/graficos/grafico.js"></script>
+<script src="js/modelo/cinematica.js"></script>
+<script src="js/modelo/energia.js"></script>
+<script src="js/modelo/terrenos.js"></script>
+<script src="js/planificador/astar.js"></script>
+<script src="js/dibujo/robot.js"></script>
+<script src="js/dibujo/mapa.js"></script>
+<script src="js/pestanas/remolque.js"></script>
+<script src="js/pestanas/energia.js"></script>
+<script src="js/pestanas/planificador.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
